@@ -74,16 +74,19 @@ export const usePhotoSession = () => {
       try {
         // Create a new photo session
         const sessionId = uuidv4()
-        const { error: sessionError } = await supabase
+        const { data: sessionData, error: sessionError } = await supabase
           .from('photo_sessions')
           .insert({
             id: sessionId,
             session_name:
               sessionName || `Photo Session ${new Date().toLocaleDateString()}`,
           })
+          .select()
+          .single()
 
         if (sessionError) {
-          throw sessionError
+          console.error('Session creation error:', sessionError)
+          throw new Error(`Failed to create session: ${sessionError.message}`)
         }
 
         const uploadPromises = photos.map(async (photo, index) => {
@@ -105,15 +108,22 @@ export const usePhotoSession = () => {
             .getPublicUrl(fileName)
 
           // Save photo record to database
-          const { error: photoError } = await supabase.from('photos').insert({
-            id: photo.id,
-            session_id: sessionId,
-            image_url: urlData.publicUrl,
-            order_number: photo.order,
-          })
+          const { data: photoData, error: photoError } = await supabase
+            .from('photos')
+            .insert({
+              id: photo.id,
+              session_id: sessionId,
+              image_url: urlData.publicUrl,
+              order_number: photo.order,
+            })
+            .select()
+            .single()
 
           if (photoError) {
-            throw photoError
+            console.error('Photo insert error:', photoError)
+            throw new Error(
+              `Failed to save photo ${photo.order}: ${photoError.message}`,
+            )
           }
 
           // Update progress

@@ -39,9 +39,15 @@ CREATE POLICY "Allow public insert access to photos" ON photos
 -- Create storage bucket for photos
 INSERT INTO storage.buckets (id, name, public) VALUES ('photos', 'photos', true);
 
--- Create policy for storage bucket
+-- Create policies for storage bucket
 CREATE POLICY "Allow public uploads to photos bucket" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'photos');
 
 CREATE POLICY "Allow public read access to photos bucket" ON storage.objects
   FOR SELECT USING (bucket_id = 'photos');
+
+CREATE POLICY "Allow public update access to photos bucket" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'photos');
+
+CREATE POLICY "Allow public delete access to photos bucket" ON storage.objects
+  FOR DELETE USING (bucket_id = 'photos');

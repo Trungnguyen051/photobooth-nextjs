@@ -54,16 +54,28 @@ export default function PhotoShoot() {
 
   const handleSaveSession = useCallback(async () => {
     try {
+      console.log('Starting photo upload process...')
+      console.log('Photos to upload:', photos.length)
+      console.log('Session name:', sessionName || 'Default session name')
+
       const sessionId = await uploadPhotosToSupabase(sessionName || undefined)
+      console.log('Upload successful! Session ID:', sessionId)
+
       toast.success(`Photos saved successfully! Session ID: ${sessionId}`)
       clearSession()
       setCurrentView('camera')
       setSessionName('')
     } catch (error) {
       console.error('Failed to save photos:', error)
-      toast.error('Failed to save photos. Please try again.')
+
+      let errorMessage = 'Failed to save photos. Please try again.'
+      if (error instanceof Error) {
+        errorMessage = `Save failed: ${error.message}`
+      }
+
+      toast.error(errorMessage)
     }
-  }, [uploadPhotosToSupabase, sessionName, clearSession])
+  }, [uploadPhotosToSupabase, sessionName, clearSession, photos.length])
 
   const handleNewSession = useCallback(() => {
     clearSession()

@@ -7,6 +7,7 @@ import { Camera, RotateCcw, Save, Trash2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
+import { toast } from 'sonner'
 
 const videoConstraints = {
   width: 1280,
@@ -17,10 +18,6 @@ const videoConstraints = {
 export default function PhotoShoot() {
   const [currentView, setCurrentView] = useState<'camera' | 'preview'>('camera')
   const [sessionName, setSessionName] = useState('')
-  const [notification, setNotification] = useState<{
-    message: string
-    type: 'success' | 'error'
-  } | null>(null)
   const webcamRef = useRef<Webcam>(null)
 
   const {
@@ -58,21 +55,13 @@ export default function PhotoShoot() {
   const handleSaveSession = useCallback(async () => {
     try {
       const sessionId = await uploadPhotosToSupabase(sessionName || undefined)
-      setNotification({
-        message: `Photos saved successfully! Session ID: ${sessionId}`,
-        type: 'success',
-      })
-      setTimeout(() => setNotification(null), 5000)
+      toast.success(`Photos saved successfully! Session ID: ${sessionId}`)
       clearSession()
       setCurrentView('camera')
       setSessionName('')
     } catch (error) {
       console.error('Failed to save photos:', error)
-      setNotification({
-        message: 'Failed to save photos. Please try again.',
-        type: 'error',
-      })
-      setTimeout(() => setNotification(null), 5000)
+      toast.error('Failed to save photos. Please try again.')
     }
   }, [uploadPhotosToSupabase, sessionName, clearSession])
 
@@ -84,27 +73,6 @@ export default function PhotoShoot() {
 
   return (
     <div className="z-10 flex flex-col items-center justify-center max-w-6xl mx-auto p-6">
-      {/* Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg border shadow-lg transition-all duration-300 ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}
-        >
-          <div className="flex items-start justify-between">
-            <p className="text-sm font-medium">{notification.message}</p>
-            <button
-              onClick={() => setNotification(null)}
-              className="ml-2 text-gray-400 hover:text-gray-600"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
       <h1 className="text-4xl font-bold mb-4">Photo Booth Session</h1>
       <p className="text-lg text-center mb-8">
         Capture 4 amazing photos for your photo booth session!

@@ -30,11 +30,23 @@ CREATE POLICY "Allow public read access to photo_sessions" ON photo_sessions
 CREATE POLICY "Allow public insert access to photo_sessions" ON photo_sessions
   FOR INSERT WITH CHECK (true);
 
+CREATE POLICY "Allow public update access to photo_sessions" ON photo_sessions
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public delete access to photo_sessions" ON photo_sessions
+  FOR DELETE USING (true);
+
 CREATE POLICY "Allow public read access to photos" ON photos
   FOR SELECT USING (true);
 
 CREATE POLICY "Allow public insert access to photos" ON photos
   FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow public update access to photos" ON photos
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public delete access to photos" ON photos
+  FOR DELETE USING (true);
 
 -- Create storage bucket for photos
 INSERT INTO storage.buckets (id, name, public) VALUES ('photos', 'photos', true);

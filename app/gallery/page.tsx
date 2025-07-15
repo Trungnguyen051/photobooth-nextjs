@@ -1,8 +1,9 @@
 'use client'
 
+import { PhotoSessionCard } from '@/components/photo-session-card'
 import { Button } from '@/components/ui/button'
 import { supabase, type PhotoSession } from '@/lib/supabase'
-import { Calendar, Camera, Download, Eye } from 'lucide-react'
+import { Camera, Download } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -48,6 +49,12 @@ export default function Gallery() {
   useEffect(() => {
     fetchSessions()
   }, [fetchSessions])
+
+  const handleDeleteSession = useCallback((sessionId: string) => {
+    setSessions((prevSessions) =>
+      prevSessions.filter((session) => session.id !== sessionId),
+    )
+  }, [])
 
   const handleDownloadSession = useCallback(async (session: PhotoSession) => {
     try {
@@ -125,79 +132,12 @@ export default function Gallery() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sessions.map((session) => (
-              <div
+              <PhotoSessionCard
                 key={session.id}
-                className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                {/* Session thumbnail grid */}
-                <div className="aspect-square bg-muted relative">
-                  <div className="grid grid-cols-2 gap-1 p-2 h-full">
-                    {session.photos
-                      .sort((a, b) => a.order_number - b.order_number)
-                      .slice(0, 4)
-                      .map((photo, index) => (
-                        <div
-                          key={photo.id}
-                          className="relative overflow-hidden rounded-sm bg-muted-foreground/10"
-                        >
-                          <img
-                            src={photo.image_url}
-                            alt={`Photo ${photo.order_number}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    {/* Fill empty slots if less than 4 photos */}
-                    {[...Array(Math.max(0, 4 - session.photos.length))].map(
-                      (_, index) => (
-                        <div
-                          key={`empty-${index}`}
-                          className="bg-muted rounded-sm flex items-center justify-center"
-                        >
-                          <Camera className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                      ),
-                    )}
-                  </div>
-                  {session.photos.length > 0 && (
-                    <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                      {session.photos.length} photos
-                    </div>
-                  )}
-                </div>
-
-                {/* Session info */}
-                <div className="p-4">
-                  <h3 className="font-semibold mb-1 truncate">
-                    {session.session_name || 'Untitled Session'}
-                  </h3>
-                  <div className="flex items-center text-sm text-muted-foreground mb-4">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(session.created_at).toLocaleDateString()}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedSession(session)}
-                      className="flex-1 flex items-center gap-1"
-                    >
-                      <Eye className="w-3 h-3" />
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadSession(session)}
-                      className="flex-1 flex items-center gap-1"
-                    >
-                      <Download className="w-3 h-3" />
-                      Download
-                    </Button>
-                  </div>
-                </div>
-              </div>
+                session={session}
+                onView={setSelectedSession}
+                onDelete={handleDeleteSession}
+              />
             ))}
           </div>
         )}
